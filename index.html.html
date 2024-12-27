@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doğruluk mu, Cesaret mi?</title>
+  <style>
+    /* Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: 'Arial', sans-serif;
+      overflow: hidden; /* dikey scroll kapalı */
+      color: #fff;
+      position: relative;
+    }
+
+    /* Arka plan degrade */
+    body {
+      background: linear-gradient(180deg, #2c003f 0%, #6b006f 100%);
+    }
+    /* Doku efekti (opsiyonel) */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url("https://www.transparenttextures.com/patterns/hexellence.png");
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    /* Kar tanesi efekti */
+    .snowflake {
+      position: absolute;
+      top: -10px;
+      font-size: 1.2em;
+      opacity: 0.9;
+      pointer-events: none;
+      color: #fff;
+      animation-name: snow;
+      animation-duration: 10s;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+    @keyframes snow {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(110vh); }
+    }
+
+    /* GENEL BÖLÜMLER */
+    .section {
+      display: none;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      text-align: center;
+      padding: 40px 20px;
+      animation: fadeIn 0.5s ease forwards;
+      opacity: 0;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    /* GİRİŞ EKRANI */
+    #introSection {
+      display: flex; 
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #introSection h1 {
+      font-size: 50px;
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    #introSection p {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .intro-play-btn {
+      display: inline-block;
+      padding: 15px 25px;
+      background: #fff;
+      color: #333;
+      border-radius: 30px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.1s ease;
+      margin-bottom: 15px;
+    }
+    .intro-play-btn:hover {
+      transform: scale(1.03);
+    }
+    .store-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .store-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 20px;
+      padding: 10px 15px;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .store-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* OYUNCU EKLE EKRANI */
+    #playerSetupSection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #playerSetupSection h2 {
+      font-size: 32px;
+      margin-bottom: 30px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    .player-inputs {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(5px);
+      padding: 20px 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .player-inputs input {
+      width: 250px;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      outline: none;
+    }
+    .start-game-btn {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 15px 25px;
+      font-size: 18px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+    .start-game-btn:hover {
+      transform: scale(1.03);
+    }
+
+    /* OYUN EKRANI */
+    #gameSection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* Yukarı ortada kategori butonları */
+    .category-container {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+    .category-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 20px;
+      padding: 10px 15px;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .category-btn:hover, .category-btn.active {
+      background: rgba(255,255,255,0.35);
+    }
+
+    /* Oyuncu ve puan listesi (sol üst) */
+    .players-list {
+      position: absolute;
+      top: 80px;
+      left: 20px;
+      backdrop-filter: blur(5px);
+      background: rgba(0,0,0,0.3);
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      z-index: 9;
+      min-width: 180px;
+      text-align: left;
+    }
+    .players-list h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      padding-bottom: 5px;
+    }
+    .players-list ul {
+      list-style: none;
+      margin-top: 10px;
+    }
+    .players-list li {
+      margin: 5px 0;
+      font-size: 16px;
+    }
+
+    /* MERKEZDEKİ ALAN */
+    .main-content {
+      margin-top: 100px; /* kategori butonlarının altından başlasın */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 20px;
+    }
+
+    /* Sıradaki oyuncu */
+    #currentPlayerDisplay {
+      font-size: 22px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+      margin-bottom: 10px;
+    }
+
+    /* Soru alanı */
+    #questionArea {
+      font-size: 28px;
+      max-width: 80%;
+      line-height: 1.4;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+      animation: fadeInUp 0.8s ease forwards;
+      opacity: 0;
+    }
+    @keyframes fadeInUp {
+      0% {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Doğruluk / Cesaret butonları */
+    .game-buttons {
+      margin-top: 10px;
+      display: flex;
+      gap: 20px;
+    }
+    .action-btn {
+      background: #fff;
+      color: #333;
+      border: none;
+      padding: 15px 25px;
+      border-radius: 30px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      min-width: 120px;
+    }
+    .action-btn:hover {
+      transform: scale(1.03);
+    }
+
+  </style>
+</head>
+<body>
+  <!-- GİRİŞ EKRANI -->
+  <section id="introSection" class="section" style="display:flex;">
+    <h1>Doğruluk mu, Cesaret mi?</h1>
+    <p>Klasik parti oyununun çevrimiçi versiyonu!</p>
+    <a class="intro-play-btn" onclick="goToPlayerSetup()">Çevrimiçi oyna</a>
+    <div class="store-buttons">
+      <button class="store-btn">App Store</button>
+      <button class="store-btn">Play Store</button>
+    </div>
+  </section>
+
+  <!-- OYUNCU EKLE EKRANI -->
+  <section id="playerSetupSection" class="section">
+    <h2>Oyuncu İsimlerini Gir</h2>
+    <div class="player-inputs">
+      <input type="text" id="player1" placeholder="Oyuncu 1">
+      <input type="text" id="player2" placeholder="Oyuncu 2">
+      <input type="text" id="player3" placeholder="Oyuncu 3 (opsiyonel)">
+      <input type="text" id="player4" placeholder="Oyuncu 4 (opsiyonel)">
+    </div>
+    <button class="start-game-btn" onclick="startGame()">Oyuna Başla</button>
+  </section>
+
+  <!-- OYUN EKRANI -->
+  <section id="gameSection" class="section">
+    <!-- KATEGORİLER (Yukarı Ortada) -->
+    <div class="category-container" id="categoryContainer">
+      <!-- Emoji eklenmiş butonlar -->
+      <button class="category-btn active">Standart 😋</button>
+      <button class="category-btn">Heyecanlı 🥳</button>
+      <button class="category-btn">Çift Olmaya Yakın 🥰</button>
+      <button class="category-btn">Ekstrem 🥵</button>
+    </div>
+
+    <!-- Oyuncular Kutusu (Solda) -->
+    <div class="players-list">
+      <h3>Oyuncular ve Puanlar:</h3>
+      <ul id="playersUL"></ul>
+    </div>
+
+    <!-- ANA İÇERİK (Merkez) -->
+    <div class="main-content">
+      <h2 id="currentPlayerDisplay">Sıradaki Oyuncu: -</h2>
+      <div id="questionArea">Soru burada görünecek...</div>
+
+      <div class="game-buttons">
+        <button class="action-btn" onclick="chooseTruth()">Doğruluk</button>
+        <button class="action-btn" onclick="chooseDare()">Cesaret</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    /* DOM Elemanları */
+    const introSection = document.getElementById('introSection');
+    const playerSetupSection = document.getElementById('playerSetupSection');
+    const gameSection = document.getElementById('gameSection');
+
+    const playersUL = document.getElementById('playersUL');
+    const questionArea = document.getElementById('questionArea');
+    const categoryContainer = document.getElementById('categoryContainer');
+    const categoryBtns = categoryContainer.querySelectorAll('.category-btn');
+    const currentPlayerDisplay = document.getElementById('currentPlayerDisplay');
+
+    /* Oyuncu listesi ve puanlar */
+    let players = [];
+    let scores = [];
+    let currentPlayerIndex = 0;
+
+    /* Seçilen kategori (varsayılan: "Standart 😋") */
+    let selectedCategory = "Standart 😋";
+
+    /* 
+      4 kategori (emoji dahil) + her birinde truth/dare = 8 dizi
+      Aşağıda, anahtarlar da emojiyle aynen eşleşiyor!
+    */
+    const categoryQuestions = {
+      "Standart 😋": {
+        truth: [
+          "Bugüne kadar yaptığın en komik hata neydi?",
+          "Çocukluğunda en sevdiğin çizgi film hangisiydi?",
+          "En son ne zaman gerçekten utanacak bir şey yaptın ve neydi?",
+          "En garip takıntın ya da alışkanlığın nedir?",
+          "En sevdiğin şarkıyı söylemekten çekinir misin?",
+          "Yalan söyleme konusunda kendini ne kadar başarılı buluyorsun?",
+          "En son kime ve ne için kızdın?",
+          "Bir süper gücün olsa ne olsun isterdin?",
+          "Seyahat etmek istediğin ilk yer neresi?",
+          "Senin için “mükemmel bir gün” nasıl geçer?",
+          "Hayatın boyunca seni en çok etkileyen kişi kim oldu?",
+          "Kendinde en sevdiğin özelliğin nedir?",
+          "Seni en çok ne mutlu eder?",
+          "En son ne zaman ağladın ve neden?",
+          "Sabah erken kalkmak mı, gece geç yatmak mı sana daha uygun?",
+          "En sevmediğin yemek nedir?",
+          "Bugüne dek aldığın en saçma hediye neydi?",
+          "Utanmasan hangi spor veya hobiyle uğraşmak isterdin?",
+          "En sevdiğin tatlı hangisi?",
+          "Bütün gün evde tek başına kalsan neler yaparsın?",
+          "Hayatında dönüm noktası olan bir an var mı?",
+          "En saçma korkun nedir?",
+          "İlk görüşte aşka inanır mısın?",
+          "Seni kolaylıkla sinirlendiren bir şey var mı?",
+          "Harcarken en çok “acı” duyduğun şey nedir? (Örneğin taksi ücreti, fast food vb.)",
+          "Uykunda konuştuğunu hiç söyleyen oldu mu?",
+          "Çevrendekiler seni tek bir kelimeyle anlatsa ne derlerdi?",
+          "Sosyal medyada en çok ne yaparken zaman kaybedersin?",
+          "Evcil hayvan beslemek istesen hangi hayvanı seçerdin?",
+          "Şu an yaşadığın hayatı bir film olsa adı ne olurdu?"
+        ],
+        dare: [
+          "Taklit Gösterisi: En sevdiğin çizgi film karakterini 30 saniyeliğine taklit et.",
+          "Komik Dans: Yanındakilere komik bir dans figürü sergile.",
+          "Şarkı Mırıldanma: Çok sevdiğin bir şarkının nakaratını mırıldanarak söyle.",
+          "Övgü Seli: Etrafındaki herkese birer cümlelik övgü söyle.",
+          "Garip Yiyecek Karışımı: Evinizdeki iki farklı yiyeceği karıştırıp tat.",
+          "Acayip Yüz İfadesi: Telefonla selfie alır gibi 5 farklı komik yüz ifadesi yap.",
+          "Anı Anlat: En utandığın anı yüksek sesle anlat.",
+          "İsim Terslemesi: Tüm oyuncuların ismini tersinden oku ve onlara öyle hitap et.",
+          "Sürpriz Selfie: Etrafındaki bir arkadaşınla aniden selfie çek ve göster.",
+          "Sıra Dışı Alkış: 15 saniye boyunca değişik bir şekilde alkışla.",
+          "Göz Bağlı Nesne Tahmini: Gözlerini kapatıp eline verilen nesneyi dokunarak tahmin et.",
+          "Ters Soru: Herkes sana bir soru sorsun, ama sen tamamen alakasız bir cevap ver.",
+          "Diyalog Değişimi: Yakın zamanda izlediğin bir film sahnesini kendi sözlerinle canlandır.",
+          "Garip Dans Şarkısı: Sadece kafanla ve omuzlarınla 10 saniye dans et.",
+          "Ses Taklidi: Masadaki bir eşyanın sesini taklit et (ör. telefon zili).",
+          "Yabancı Dil Denemesi: Bildiğin veya uydurduğun bir yabancı dilde 10 saniye konuş.",
+          "Emojiyi Canlandır: En sevdiğin 3 emojiyi yüz ifadeleriyle göster.",
+          "Çocukluk Fotoğrafı Anısı: Telefonunda varsa çocukluk fotoğrafını göster.",
+          "Garip Duyuru: Yüksek sesle “Ben … yapmaya bayılıyorum!” gibi komik bir cümle uydur.",
+          "Sosyal Medya Mola: 1 saat boyunca sosyal medyayı kapatacağına söz ver.",
+          "Tuhaf Oturuş: 1 tur boyunca sandalyede ters otur.",
+          "Göz Teması Yarışı: Bir oyuncuyla göz teması kurarak ilk kim gülecek diye bakışma yap.",
+          "Tuhaf İtiraf: Absürt bir şey itiraf et (ör. “Sabahları aynaya bakıp şarkı söylüyorum”).",
+          "Doğaçlama Hikâye: Rastgele üç kelime seçip kısa bir hikâye uydur.",
+          "Telefon Arama: Rehberinden birini ara, 5 saniye boyunca ilginç bir replik söyle.",
+          "Yerde Yuvarlanma: Güvenli bir alanda 2-3 defa yuvarlan.",
+          "Ters Alkış: Ellerini arkadan birleştirerek alkış yapmaya çalış.",
+          "İlginç Yürüme: Odayı çok saçma bir yürüyüşle dolaş.",
+          "5 Kelimelik Tanım: Kendini 5 kelimede özetle.",
+          "Beklenmedik İltifat: Karşındaki birine içten bir iltifat et."
+        ]
+      },
+
+      "Heyecanlı 🥳": {
+        truth: [
+          "Karşındaki kişinin ilgini çekmesi için ne yapması gerekir?",
+          "İlk buluşmada en çok nelere dikkat edersin?",
+          "Senden hoşlanan birisi olduğunu nasıl anlarsın?",
+          "Kendini en çekici hissettiğin an veya durum hangisi?",
+          "Söylenmekten en hoşlandığın iltifat nedir?",
+          "Gizlice birisine hayranlık duyduğun oldu mu? Nasıl hissettirdi?",
+          "Hoşlandığın kişiye yaklaşma taktiğin nedir?",
+          "Karşı cinsle ilgili seni en çok etkileyen özellik ne?",
+          "Sence senin hangi özelliğin daha unutulmaz?",
+          "Hiç ilk görüşte “Bu kişiyle yakınlaşmalıyım” dediğin oldu mu?",
+          "Seni bir anda kalabalıkta rezil edebilecek bir özelliğin var mı?",
+          "Hoşlandığın kişiyle iki dakikada yakınlık kurmak için hangi konuyu açarsın?",
+          "Karşındaki kişiden alabileceğin en çekici mesaj ne olurdu?",
+          "Hangi ortamda insanlar seni daha fazla çekici buluyor?",
+          "En beklenmedik anda aldığın romantik bir sürpriz var mı?",
+          "Hoşlandığın birinden mesaj beklerken neler hissedersin?",
+          "Dış görünüşte ilk dikkat ettiğin şey ne oluyor?",
+          "Karşındaki kişiye “beni keşfet” dedirtecek özelliğin nedir?",
+          "Arkadaşların arasındayken hoşlandığın kişiyi gördüğünde ne yaparsın?",
+          "İlk adımı atmaktan çekinir misin, yoksa cesur musun?",
+          "Seninle flörtleşen birini hemen anlar mısın, yoksa geç mi fark edersin?",
+          "Eğlenceli bir partner mi, yoksa sakin ve romantik bir partner mi daha çok ilgini çeker?",
+          "“Bunu yaparsa hemen reddederim” dediğin bir şey var mı?",
+          "Telefon görüşmesinde ses tonu senin için önemli midir?",
+          "Hiç umutsuz bir aşka düştün mü? Nasıl başa çıktın?",
+          "İltifat almak mı vermek mi sana daha cazip gelir?",
+          "Ufacık bir bakışla “Bu kişi beni istiyor” mesajını alabilir misin?",
+          "Flört ederken en sık hangi duyguyu yaşıyorsun: heyecan, korku, utangaçlık?",
+          "Dışarıda kalabalık bir ortamda ilk kim açıkça yakınlaşma sinyali verir?",
+          "Seni etkileyen küçük jestlere örnek verebilir misin?"
+        ],
+        dare: [
+          "Flört Mesajı: Hoşlandığın kişiye ufak da olsa flörtöz bir mesaj at.",
+          "Aniden Göz Kırpma: Bir oyuncuyla göz teması kur ve ona aniden göz kırp.",
+          "Çapkın Bakış: Bir arkadaşına 5 saniye boyunca en çapkın bakışını yap.",
+          "Elle Selamlama: Yakınındaki birinin elini nazikçe öperek selam ver.",
+          "İltifat Bombası: Sırayla herkese tek cümlelik tatlı bir iltifat söyle.",
+          "Ufak Dokunma: Yakınındaki birine (izinle!) omzuna veya koluna hafifçe dokun.",
+          "Çapkın Şarkı Söyleme: Kısa bir aşk şarkısını fısıldayarak söyle.",
+          "Profil Kontrolü: Son takip ettiğin Instagram profilini gruba anlat.",
+          "Yakın Mesafe Fısıldama: Bir oyuncunun kulağına fısıldayarak komik bir cümle söyle.",
+          "Flört İtirafı: Geçmişteki en çılgın flört hamleni anlat.",
+          "Telefon Rehberi Keşfi: Rehberindeki ilginç bir ismi seç ve hikayesini paylaş.",
+          "Ayna Karşısında Poz: 10 saniye ‘en çekici pozunu’ vermeye çalış.",
+          "Temaslı Selamlaşma: Yandaki kişiyle tokalaşma + sarılma karışımı ilginç bir selam yap.",
+          "Çapkın Replik: Bir filmden duyduğun en iddialı repliği canlandır.",
+          "Utandıran Anı: Seni en çok utandıran flört anını anlat.",
+          "Kaş Hareketi: Kaşlarını oynatarak ‘gel buraya’ der gibi bir mimik yap.",
+          "En Ateşli Dans: 15 saniye ufak bir dans figürüyle ortamı ısıt.",
+          "Komik Aşk İlanı: Masadaki bir nesneye aşk ilanı yap.",
+          "Ters Mesaj: Sevdiğin birine minik bir ses kaydı gönder ve komik bir şey söyle.",
+          "Flört İçin 3 Kelime: Biriyle flört ederken ilk söylediğin 3 kelimeyi sesli söyle.",
+          "İltifatla Şaşırt: Bir oyuncuyu beklemediği bir özelliğinden dolayı öv.",
+          "Cesur Selfie: Kendini çekici hissettiğin bir selfie çek ve göster (güvenli şekilde).",
+          "Kaçamak Dokunuş: Yakınında biri varsa dirseğine minik bir dokunuş yaparak selam ver.",
+          "Ayartıcı Sor: Bir kişiye “Beni baştan çıkarmak için ne yaparsın?” diye sor.",
+          "Çapkın Yürüyüş: 5 saniye boyunca ‘podyum yürüyüşü’ yap.",
+          "Gizli Mesaj: Bir kağıda flörtöz bir not yaz, birine gizlice uzat.",
+          "Cüretkâr Bakışma: Bir oyuncuyla 10 saniye göz göze bak, gülmek yok!",
+          "Rastgele Öpücük Sesi: Avucuna ya da havaya kısa bir öpücük sesi ver ve gülümse.",
+          "Hoşlanma İtirafı: Oyundaki birine şaka da olsa “Senden hoşlanıyorum” de.",
+          "Herhangi Bir Cesaret Görevi: Gruptan biri sana ufak bir flörtöz görev versin, yap."
+        ]
+      },
+
+      "Çift Olmaya Yakın 🥰": {
+        truth: [
+          "Şu anda elimi tutmana izin versem, ilk tepkini merak ediyorum. Ne hissederdin?",
+          "Öpüşürken nelerin seni daha da heyecanlandırdığını söyleyebilir misin?",
+          "Sarılmak mı yoksa öpmek mi senin için daha özel?",
+          "Partnerinin seninle ilgilendiğini hangi hareketinden anlarsın?",
+          "Şu an yan yana olsaydık, en çok ne yapmak isterdin?",
+          "Sana dokunmama izin verseydin, bunu nasıl isterdin?",
+          "Hangi konuda senin sınırlarını öğrenmek isterdin?",
+          "Romantik bir gecede olmazsa olmazın nedir?",
+          "Göz teması senin için ne kadar önemli?",
+          "Birlikte film izlerken sarılmaktan hoşlanır mısın?",
+          "Seni gerçekten tutkulu hissettiren bir davranış hangisi?",
+          "Duygusal bağ mı, fiziksel çekim mi senin için daha önce gelir?",
+          "En çok hangi bölgenden öpülmek seni etkiler?",
+          "Yakınlaşma sırasında arka planda müzik olsun ister misin?",
+          "Konuşmadan sadece bakışlarla anlaşmaya inanır mısın?",
+          "“Beni çıldırtır” dediğin dokunuş tipi nedir?",
+          "Flörtleşme sırasında hangisini daha çok seversin: tatlı sözler mi, ufak fiziksel temaslar mı?",
+          "Öpüşürken boynuna dokunulmasına nasıl tepki verirsin?",
+          "Belli bir duygu yoğunluğunda karşındaki kişiye neler hissettirmek istersin?",
+          "Sana yapılan küçük bir sürpriz (mesela masaj) hoşuna gider mi?",
+          "Ne yaparsam sana kendini daha özel hissettirebilirim?",
+          "Partnerinin senin vücudunda en sevdiğin bölgeye dokunmasını nasıl karşılarsın?",
+          "Herhangi bir yerde, spontane bir öpücük seni rahatsız eder mi?",
+          "İçinde “Yaparsam beni daha çok beğenir” dediğin bir davranış veya hareket var mı?",
+          "Romantik bir akşam yemeğinden sonra nasıl bir devam hayal edersin?",
+          "Kendini en güvende hissettiğin romantik ortamı anlatır mısın?",
+          "Sana “dokunma” ile ilgili herhangi bir sınır sormak ister misin?",
+          "İlişkiyi bir sonraki aşamaya taşımak için en doğru an sence ne zaman?",
+          "Benimle paylaşmaktan çekinmeyeceğin bir fantezin var mı?",
+          "Karşındaki kişinin ilgisini çekmek için “şu” hareketi mutlaka yaparım dediğin bir şey var mı?"
+        ],
+        dare: [
+          "El Ele Tutuşma: Yanındaki kişiyle 10 saniye el ele tutuş ve göz teması kur.",
+          "Boyun Fısıltısı: İzin alarak bir arkadaşının kulağına boyun hizasında fısılda.",
+          "Yanağa Öpücük: Rızayla bir arkadaşının yanağına küçük bir öpücük kondur.",
+          "Kalp Çizim: Bir kâğıda kalp çiz, içine birinin adını yaz ve ona ver.",
+          "Romantik Komut: Gözlerini kapat, biri “sarıl!” dediğinde seçtiğin kişiye kısaca sarıl.",
+          "Şarkıyı Gözlerine Söyle: Ufak bir romantik şarkıyı birine göz temasıyla söylemeye çalış.",
+          "Çikolata İkramı: Rızasıyla birine küçük bir çikolata ya da meyve yedir.",
+          "Tatlı Mesaj Gönder: Oyundaki birine telefonundan “Seninle vakit geçirmek güzel” yaz.",
+          "Elde Yazılı Mesaj: Elinin avuç içine küçük bir kalp çiz, birine göster.",
+          "Favori Parfüm: Kendi parfümünü koklatarak “Bu koku sende nasıl bir his uyandırıyor?” de.",
+          "Sarılma Testi: Yakınındaki birine 10 saniyelik sıcak bir sarılma ver.",
+          "Romantik Soru: Bir oyuncuya “Şu an aklından ne geçiyor?” diye sor ve dinle.",
+          "Yumuşak Dokunuş: İzin alarak, birinin saçını veya omzunu nazikçe okşa.",
+          "Sevgi Mesajı: Telefonla sevdiğin bir yakına kısa bir sevgi mesajı gönder.",
+          "Ortak Foto: Gruptan biriyle baş başa bir selfie çekip ufak kalp emojisi ekle.",
+          "Sıcak Kompliman: Bir kişiye “En çok şu yönünü beğeniyorum” diyerek iltifat et.",
+          "Benimle Dans Eder misin?: Hafif bir müzikle 10 saniye dans et.",
+          "Ellerle Isı Aktar: Ellerinizi birbirine değdirip 5 saniye ısı geçişini hissedin.",
+          "Aşk Repliği: Duyduğun en romantik repliği yüksek sesle oku.",
+          "Göz Kapama: Birinin gözlerini kapatıp “Ellerim nerede?” oyunu oyna (güvenli şekilde).",
+          "Sürpriz Dokunuş: Yakınındaki birine usulca dokun ve “Nereye dokundum?” diye sor.",
+          "Şefkatli Kaçamak: Birine 1-2 cümlelik şefkatli bir sır söyle.",
+          "Romantik Sahne Canlandırma: Hafif bir romantik film sahnesini öpüşmesiz taklit et.",
+          "Samimi İtiraf: Hoşlandığın birinin hangi özelliğine vurulduğunu paylaş.",
+          "Bir Sonraki Buluşma: Kendi ideal buluşma planını kısaca anlat.",
+          "Gizli Aşk Notu: Ufak bir aşk notu yazıp masaya ya da cebine gizlice bırak.",
+          "Yakın Oturma: 1 tur boyunca seçtiğin bir oyuncuyla yan yana otur.",
+          "İlk Öpücük Anısı: İlk öpücüğünü 15 saniyede özetle (uygun ölçüde).",
+          "Kalp Atışı: İzinle başını yavaşça arkadaşının göğsüne yasla, kalp atışını dinle."
+        ]
+      },
+
+      "Ekstrem 🥵": {
+        truth: [
+          "Gecenin bir yarısı, uyurken seni dokunuşumla uyandırsam nasıl tepki verirsin?",
+          "Sabah uyanır uyanmaz fiziksel yakınlık yaşamak sana çekici gelir mi?",
+          "Partnerinin ereksiyon olması ya da senin uyarılmış olman hoşuna gider mi, ne düşünüyorsun?",
+          "Seni en çok hangi pozisyonda rahat hissedersin?",
+          "Kıyafetlere sürtünmek hakkında ne düşünüyorsun, seni heyecanlandırır mı?",
+          "Seks sırasında konuşmak mı sessiz kalmak mı daha heyecan verici?",
+          "Kendi fantezilerinden birini paylaşmak ister misin?",
+          "Başka bir odada veya gizli bir yerde yakınlaşmak heyecanını artırır mı?",
+          "Boynundan öpülmek mi yoksa kulaklarından mı daha etkili?",
+          "Seks oyuncakları hakkında ne düşünüyorsun?",
+          "Partnerinin zevkini artırmak için mutlaka yaptığın bir şey var mı?",
+          "İlk defa birlikte olduğun kişiye karşı ekstra bir heyecan veya gerilim hisseder misin?",
+          "Reddedemeyeceğin bir dokunuş şekli var mı?",
+          "Sence “arkadan” yakınlaşma (anal seks) hakkında ne düşünüyorsun, çekici mi geliyor?",
+          "Seks sırasında konuşmanın seni daha çok tahrik ettiğini düşünüyor musun?",
+          "Farklı bir yerde (örneğin duşta, mutfakta) yakınlaşmayı denedin mi?",
+          "Sabaha kadar süren uzun bir gecenin hayali seni heyecanlandırıyor mu?",
+          "Rol yapma (role-play) gibi fantezileri hiç düşündün mü?",
+          "Klasik mi yoksa spontan ve çılgın bir cinsel ilişki mi seni daha çok tatmin eder?",
+          "Sakso çekmek (oral seks) hakkında düşüncelerini paylaşır mısın?",
+          "Isırılmaktan veya hafif acıdan hoşlanır mısın?",
+          "Karşılıklı mastürbasyon fikrine nasıl bakarsın?",
+          "Uzun bir ön sevişme mi yoksa doğrudan eyleme geçmek mi tercih edersin?",
+          "İlk defa yaşadığın en tuhaf veya ekstrem deneyimi anlatmak ister misin?",
+          "Sessiz ortam mı, yoksa yüksek sesli bir müzik mi seni daha rahat hissettirir?",
+          "Tüm kontrolün sende olması mı yoksa partnerinin kontrol etmesi mi seni daha çok çekiyor?",
+          "Kameralı veya aynalı ortamlarda daha fazla heyecan hisseder misin?",
+          "Başka bir odada arkadaşlar varken gizlice yakınlaşmak konusunda ne düşünüyorsun?",
+          "Fantezilerinde “üçüncü bir kişi” fikrine yer var mı?",
+          "Seks sonrası sarılmak ve konuşmak mı, hemen uyumak mı sana daha yakın?"
+        ],
+        dare: [
+          "Vücut Öpücüğü: Rızayla, boyun veya omuz gibi bir bölgeye hafif bir öpücük kondur.",
+          "Fantezi Anlat: Uygun gördüğün bir cinsel fantezini 2-3 cümleyle paylaş.",
+          "Vücut Teması: İzinle, bir arkadaşının beline veya sırtına 5 saniye dokun.",
+          "Çılgın Mesaj: Yakın olduğun birine cüretkâr bir mesaj gönder ('Bana ne yapardın?' gibi).",
+          "Meyveyle Besleme: Rızayla partnerinin dudaklarına bir çilek veya üzüm götür.",
+          "Şehvetli Fısıltı: Bir arkadaşının kulağına hafif erotik bir cümle fısılda (rahatsa).",
+          "Koku Deneyi: Partnerinin boynuna yaklaş ve parfüm/kokusunu derin bir nefesle çek.",
+          "Vücut Dilini Okuma: Karşındaki kişinin vücut dilinden hangi cinsel sinyalleri aldığını söyle.",
+          "Minimum Giysiyle Poz: Fazlalık giysin (mont vs.) varsa çıkarıp 10 saniye poz ver.",
+          "Erotik Komik Hikâye: İçinde erotizm ve mizah olan kısacık bir hikâye uydur.",
+          "Isırma Taklidi: İzinle, boynuna veya koluna hafif ısırma hareketi yapar gibi yaklaş.",
+          "Film Sahnesi: Aklındaki erotik film sahnesini (uygun ölçüde) sözle anlat.",
+          "Vücut Masajı: Birine 10 saniyelik omuz veya boyun masajı yap (rızayla).",
+          "Göz Bağlama: Kısa süreli gözlerini bağla ya da birinin gözlerini bağla, eline verilen nesneyi hisset.",
+          "Erotik Soru Sorma: Bir kişiye “En çok nereden dokunulmak tahrik eder?” diye sor.",
+          "Tensel Yakınlık: Bir oyuncuyla bel hizasında 5 saniye temasta durun (izinle).",
+          "Karşılıklı Dokunuş: Bir oyuncuyla aynı anda ellerinizi, kollarınızı nazikçe keşfedin.",
+          "Rol Yapma: 10 saniye boyunca etkileyici bir ses tonuyla baştan çıkaran bir replik söyle.",
+          "Özel Mesaj Oku: Yakın zamanda aldığın cüretkâr bir mesaj varsa paylaşmak istersen oku.",
+          "Vücut Temas Noktası: 'Nereye dokunabilirim?' diye sor, gösterilen yere hafifçe dokun.",
+          "Sıcak İtiraf: Seks hakkında en merak ettiğin şeyi 1 cümleyle söyle.",
+          "Ortam Değiştirme: Başka bir odaya gidip 10 sn yalnız kal, sonra hislerini anlat.",
+          "Dudak Hareketi: Dudaklarını yalama ya da ısırma hareketi yaparak 'Nasıl görünüyorum?' de.",
+          "Pozisyon Önerisi: Hoşuna giden bir cinsel pozisyonu kısaca tanımla (çok detaya girmeden).",
+          "Fantezi Nesnesi: Kimseye göstermeden telefonuna erotik bir resim bak ve 'Beğendim/beğenmedim' de.",
+          "Ateşli Replik: Karşındaki kişiye 'Şu an yanımda olsan sana dokunmak isterdim' gibi bir şey söyle.",
+          "Vücut Ritmi: Seçtiğin bir şarkıya hafifçe kalça ya da bel hareketiyle dans et.",
+          "Koklayarak Tanı: Gözün kapalı, karşındaki kişinin boyun kokusundan kim olduğunu bulmaya çalış.",
+          "Fısıltılı Dilek: Bir oyuncunun kulağına 'Şu an en büyük dileğim sensin' gibi bir cümle fısılda.",
+          "Cesur Teklif: 'Bana özel bir şey öğretir misin?' gibi bir soru sor, tepkisini gözlemle."
+        ]
+      }
+    };
+
+    /* GİRİŞ EKRANI -> OYUNCU EKLE */
+    function goToPlayerSetup() {
+      introSection.style.display = 'none';
+      playerSetupSection.style.display = 'flex';
+    }
+
+    /* OYUNCULARI AL, OYUNA BAŞLA */
+    function startGame() {
+      const p1 = document.getElementById("player1").value.trim();
+      const p2 = document.getElementById("player2").value.trim();
+      const p3 = document.getElementById("player3").value.trim();
+      const p4 = document.getElementById("player4").value.trim();
+
+      if (!p1 || !p2) {
+        alert("En az 2 oyuncu adı girin!");
+        return;
+      }
+
+      players = [];
+      scores = [];
+      if (p1) { players.push(p1); scores.push(0); }
+      if (p2) { players.push(p2); scores.push(0); }
+      if (p3) { players.push(p3); scores.push(0); }
+      if (p4) { players.push(p4); scores.push(0); }
+
+      currentPlayerIndex = 0; // sıra 0. indexte
+      updateScoreboard();
+      updateCurrentPlayerDisplay();
+
+      playerSetupSection.style.display = 'none';
+      gameSection.style.display = 'flex';
+
+      setQuestion("Bir kategori seçin ve Doğruluk / Cesaret butonuna basın.");
+    }
+
+    /* SKOR TABLOSUNU GÜNCELLE */
+    function updateScoreboard() {
+      playersUL.innerHTML = "";
+      players.forEach((player, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${player} - ${scores[index]} Puan`;
+        playersUL.appendChild(li);
+      });
+    }
+
+    /* SIRADAKİ OYUNCU GÖSTER */
+    function updateCurrentPlayerDisplay() {
+      currentPlayerDisplay.textContent = `Sıradaki Oyuncu: ${players[currentPlayerIndex]}`;
+    }
+
+    /* KATEGORİ DEĞİŞTİĞİNDE */
+    categoryBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Mevcut aktif butonu kaldır
+        categoryBtns.forEach(b => b.classList.remove('active'));
+        // Tıklanan butonu aktif yap
+        btn.classList.add('active');
+
+        // Butonun metnini alıp, kategoriyi ona göre seç
+        selectedCategory = btn.textContent.trim();
+        setQuestion(`${selectedCategory} kategorisi seçildi. Şimdi Doğruluk veya Cesaret'e tıkla.`);
+      });
+    });
+
+    /* DOĞRULUK */
+    function chooseTruth() {
+      const questionArr = categoryQuestions[selectedCategory].truth;
+      const question = getRandomQuestion(questionArr);
+      setQuestion(question);
+
+      // +1 puan
+      scores[currentPlayerIndex] += 1;
+      updateScoreboard();
+      nextTurn();
+    }
+
+    /* CESARET */
+    function chooseDare() {
+      const questionArr = categoryQuestions[selectedCategory].dare;
+      const question = getRandomQuestion(questionArr);
+      setQuestion(question);
+
+      // +2 puan
+      scores[currentPlayerIndex] += 2;
+      updateScoreboard();
+      nextTurn();
+    }
+
+    /* SIRADAKİ OYUNCU */
+    function nextTurn() {
+      currentPlayerIndex++;
+      if (currentPlayerIndex >= players.length) {
+        currentPlayerIndex = 0;
+      }
+      updateCurrentPlayerDisplay();
+    }
+
+    /* SORUYU GÖSTER */
+    function setQuestion(text) {
+      questionArea.textContent = text;
+    }
+
+    /* RASTGELE SORU SEÇ */
+    function getRandomQuestion(arr) {
+      const randomIndex = Math.floor(Math.random() * arr.length);
+      return arr[randomIndex];
+    }
+
+    /* KAR TANESİ EFEKTİ */
+    function createSnowflake() {
+      const snowflake = document.createElement('div');
+      snowflake.className = 'snowflake';
+      snowflake.textContent = '❅';
+
+      snowflake.style.left = Math.random() * 100 + 'vw';
+      const size = Math.random() * (1.5 - 0.8) + 0.8;
+      snowflake.style.fontSize = size + 'em';
+      const duration = Math.random() * 10 + 10;
+      snowflake.style.animationDuration = duration + 's';
+
+      document.body.appendChild(snowflake);
+
+      setTimeout(() => {
+        snowflake.remove();
+      }, duration * 1000);
+    }
+    // Her 500 ms'de bir kar tanesi
+    setInterval(createSnowflake, 500);
+  </script>
+</body>
+</html>
